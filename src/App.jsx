@@ -1,35 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { Loader } from './components/Loader';
+import { SearchBar } from './components/SearchBar';
+import { WeatherCard } from './components/WeatherCard';
+import { getWeather } from './services/weather';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [weather, setWeather] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSearch = async (location) => {
+    try {
+      setLoading(true);
+      setError('');
+      const data = await getWeather(location);
+      setWeather(data);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch weather data');
+      setWeather(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 p-4 md:p-8 w-screen">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-4xl font-bold text-center text-gray-800 mb-8">
+          Weather App
+        </h1>
+        <SearchBar onSearch={handleSearch} />
+        
+        
+        {error && (
+          <div className="text-red-500 text-center p-4 bg-red-100 rounded-lg">
+            {error}
+          </div>
+        )}
 
-export default App
+        {loading ? <Loader/> : <WeatherCard data={weather} />}
+      </div>
+    </div>
+  );
+}
